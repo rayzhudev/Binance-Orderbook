@@ -21,7 +21,7 @@ class OrderBook():
     # asynchronously receive data from uri
     async def get_orders(self):
         received_snapshot = False
-        print("Average Execution Price for volume: " + str(self.volume))
+        print(self.symbol + " Average Execution Price for volume: " + str(self.volume))
         async with websockets.connect(self.uri) as websocket:
             while True:
                 depth_update = await websocket.recv()
@@ -34,7 +34,7 @@ class OrderBook():
                     received_snapshot = True
                 self.process_updates()
                 self.update_console()
-                        
+
 
     def get_depth_snapshot(self):
         snapshot = requests.get(self.depth_api)
@@ -44,7 +44,7 @@ class OrderBook():
             self.bids[float(order[0])] = float(order[1])
         for order in snapshot["asks"]:
             self.asks[float(order[0])] = float(order[1])
-    
+
     def process_updates(self):
         for i in range(len(self.updates)):
             if self.updates[i]["u"] < self.snapshot["lastUpdateId"]:
@@ -59,11 +59,11 @@ class OrderBook():
         self.asks = OrderedDict(sorted(self.asks.items()))
         # print(self.bids)
         # print(list(self.bids.items())[0][0])
-        
+
 
     def update_console(self):
         print("\rBUY: %f\tSELL: %f" % (self.get_average_price(False), self.get_average_price(True)), end='')
-    
+
     # bid has value of False, ask has value of True for parameter side
     def get_average_price(self, side):
         book = self.bids
@@ -81,6 +81,7 @@ class OrderBook():
             quantity += new_quantity
             avg += new_quantity*price
             index += 1
+        avg = avg / self.volume
         return avg
 
 
@@ -95,7 +96,7 @@ if __name__ == "__main__":
     except Exception as e:
         print("Invalid quantity")
         sys.exit()
-    
+
     # instantiate orderbook
     BTCUSDT_Book = OrderBook("wss://stream.binance.com:9443/ws/btcusdt@depth", "https://www.binance.com/api/v1/depth?symbol=BTCUSDT&limit=1000" ,"BTCUSDT", volume)
     # start receiving updates and start console
