@@ -86,11 +86,12 @@ class OrderBook():
 
 
 if __name__ == "__main__":
-    if not len(sys.argv) == 2:
-        print("Need quantity of BTC for average pricing")
+    if not len(sys.argv) == 3:
+        print("Need quantity and Pair")
         sys.exit()
     try:
-        volume = float(sys.argv[1])
+        pair = sys.argv[1]
+        volume = float(sys.argv[2])
         if volume < 0:
             raise ValueError
     except Exception as e:
@@ -98,6 +99,6 @@ if __name__ == "__main__":
         sys.exit()
 
     # instantiate orderbook
-    BTCUSDT_Book = OrderBook("wss://stream.binance.com:9443/ws/btcusdt@depth", "https://www.binance.com/api/v1/depth?symbol=BTCUSDT&limit=1000" ,"BTCUSDT", volume)
+    BTCUSDT_Book = OrderBook(f"wss://stream.binance.com:9443/ws/{pair.lower()}@depth", f"https://www.binance.com/api/v1/depth?symbol={pair}&limit=1000", pair, volume)
     # start receiving updates and start console
     asyncio.get_event_loop().run_until_complete(BTCUSDT_Book.get_orders())
